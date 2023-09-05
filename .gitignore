@@ -1,0 +1,6 @@
+/bin
+/target
+/.idea
+rustfinder.iml
+.cargo-ok
+.DS_Store
