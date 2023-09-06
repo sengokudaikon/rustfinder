@@ -56,7 +56,7 @@ impl AuthServicePort for AuthService {
     }
 
     async fn encode_jwt(&self, user: &User, expiration: usize) -> Result<String, jsonwebtoken::errors::Error> {
-        let secret = b"SECRET_KEY";
+        let secret = dotenv::var("JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
 
         let claims = Claims {
             sub: user.id.to_string(),
@@ -64,7 +64,7 @@ impl AuthServicePort for AuthService {
             roles: user.roles.clone(),
         };
         let header = Header::new(Algorithm::HS256);
-        let encoding_key = EncodingKey::from_secret(secret);
+        let encoding_key = EncodingKey::from_secret(secret.as_bytes());
         encode(&header, &claims, &encoding_key)
     }
 

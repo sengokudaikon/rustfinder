@@ -2,7 +2,7 @@
 name = "rustfinder"
 version = "0.0.1"
 edition = "2021"
-authors = ["Daniel Zavrin <hanamik0@protonmail.com>"]
+authors = ["Daniel Zavrin <hanamik0@proton.me>"]
 categories = ["development-tools", "web-programming", "web-programming::http-server"]
 repository = "https://github.com/sengokudaikon/rustfinder"
 license = "MIT"

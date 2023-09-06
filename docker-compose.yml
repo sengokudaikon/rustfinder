@@ -1,0 +1,46 @@
+
+version: '3.8'
+
+name: rustfinder
+
+services:
+  application:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8080:8000"
+    depends_on:
+      - database
+    volumes:
+      - ./:/rustfinder
+    networks:
+      - rustfinder-network
+  # http://localhost/api/xxxxx -> アクセス確認
+
+  database:
+    image: postgres:latest
+    container_name: database
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    # platform: linux/x86_64
+    # 仔細は省略しますが、alwaysを選択すると
+    # dockerデーモンとOSホストの再起動時にコンテナも再起動してくれるらしい
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: rustfinder
+    volumes:
+      - ../postgres/data:/var/lib/postgresql/data
+    networks:
+      - rustfinder-network
+
+
+networks:
+  rustfinder-network:
+    name: rustfinder_network
