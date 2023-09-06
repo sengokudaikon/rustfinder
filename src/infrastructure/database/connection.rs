@@ -9,8 +9,8 @@ pub type Pool = deadpool_postgres::Pool;
 pub async fn establish_connection() -> Arc<Pool> {
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = env::var("DB_HOST")
+        .expect("DB_HOST must be set");
 
     let config = deadpool_postgres::Config {
         host: Some(database_url),

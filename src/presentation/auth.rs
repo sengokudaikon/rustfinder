@@ -7,6 +7,7 @@ use crate::usecases::user::auth_service::{AuthService, AuthServicePort};
 use crate::usecases::user::user_service::{UserService, UserServicePort};
 use crate::application::auth::login_cqrs::{LoginCommand, LoginResponse, SignUpCommand, SignUpResponse};
 
+
 #[post("/login", format = "application/json", data = "<login_request>")]
 pub async fn login(controller: &State<AuthController>, login_request: Json<LoginCommand>) -> Result<Json<LoginResponse>, Status> {
     let login_result = controller.authenticate_user_login(login_request).await;
