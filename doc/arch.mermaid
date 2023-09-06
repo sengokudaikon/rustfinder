@@ -1,0 +1,75 @@
+graph TB
+    subgraph Interface
+        A[API]
+        A1[Adapters]
+        A-->|is implemented by|A1
+
+    end
+    subgraph Business Logic
+        B[Application]
+        A1-->|calls| C
+        C[Application Ports]
+        C-->|is implemented by|B
+        B-->|creates|B3
+        subgraph CQRS
+            B1[Commands]
+            B2[Queries]
+            B3[Events]
+
+            B3-->|containing|B1
+            B3-->|containing|B2
+        end
+        subgraph Handlers
+            B4[Command handlers]
+            B1-->|handled by|B4
+            B5[Query handlers]
+            B2-->|handled by|B5
+        end
+        B4-->|calls|D1
+        B5-->|calls|D1
+        D[Usecases]
+        D1[Usecase Ports]
+        D1-->|is implemented by| D
+
+    end
+    subgraph Domain
+        E[Models]
+        E1[Value Objects]
+        F[Repository Ports]
+        D-->|calls|F
+        F-->|uses|E
+        E-->|may contain|E1
+    end
+    subgraph Persistence
+        G[Repositories]
+        F-->|is implemented by|G
+        G-->|uses|H
+        H[Entities]
+        E-->|reflects|H
+    end
+    subgraph Infrastructure
+        subgraph Database
+            I[Database]
+            I1[Database Adapter]
+            I2-->|calls|I1
+            I2[Database ORM Engine]
+            I1-->|is implemented by|I
+            G-->|uses|I2
+        end
+        subgraph Message Queue
+            D-->|publishes to|K
+            J[Message Broker]
+            J1[Message Broker Adapter]
+            J1-->|is implemented by|J
+            K[Message publisher]
+            K-->|uses|J1
+            L[Message subscriber]
+            J-->|sends to|L
+        end
+    end
+    subgraph External Services
+        M[External Service]
+        M1[External Service Adapter]
+        M1-->|is implemented by|M
+        D-->|calls| M1
+    end

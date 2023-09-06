@@ -7,6 +7,8 @@ mod persistence;
 mod port;
 mod presentation;
 
+use crate::presentation::auth::AuthController;
+
 #[macro_use]
 extern crate rocket;
 
@@ -15,6 +17,11 @@ fn index() -> &'static str {
     "Hello world, from the rocket-base template! :)"
 }
 
-fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+#[launch]
+async fn rocket() -> _ {
+    let controller = AuthController::new().await;
+    rocket::build()
+        .mount("/", routes![index])
+        .manage(controller)
+        .mount("/auth", routes![presentation::auth::login, presentation::auth::sign_up])
 }

@@ -1,6 +1,7 @@
-use serde::{Serialize, Deserialize};
+use rocket::serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
-pub struct LoginRequest {
+pub struct LoginCommand {
+    pub email: String,
     pub username: String,
     pub password: String,
 }
@@ -11,7 +12,7 @@ pub struct LoginResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SignUpRequest {
+pub struct SignUpCommand {
     pub username: String,
     pub password: String,
     pub email: String,

@@ -1,28 +1,77 @@
+use std::sync::Arc;
 use jsonwebtoken::{Algorithm, decode, DecodingKey, encode, EncodingKey, Header, Validation};
 use rocket::http::Status;
-use crate::application::auth::login_cqrs::LoginRequest;
-use crate::domain::user::{User, Claims};
-use crate::infrastructure::user_repository::UserRepository;
+use argon2::{self, Argon2};
+use async_trait::async_trait;
+use password_hash::{PasswordHash, PasswordVerifier};
+use crate::application::auth::login_cqrs::{LoginCommand, LoginResponse};
+use crate::domain::user::entity::user::{User, Claims};
+use crate::domain::user::repository::port::UserRepositoryPort;
+use crate::persistence::user::repository::user_repository::UserRepository;
 
-pub async fn authenticate_user(login_request: LoginRequest, user_repository: &UserRepository) -> Result<LoginResponse, Status> {
-    // Authenticate the user using the UserRepository
-    // If the user is authenticated, generate a JWT using the encode_jwt function
+#[async_trait]
+pub(crate) trait AuthServicePort {
+    async fn authenticate_user(&self, login_request: LoginCommand) -> Result<LoginResponse, Status>;
+    async fn validate_password(&self, password: &str, saved_hash: &str) -> bool;
+    async fn encode_jwt(&self, user: &User, expiration: usize) -> Result<String, jsonwebtoken::errors::Error>;
+    async fn decode_jwt(&self, token: &str, secret: &[u8]) -> Result<Claims, jsonwebtoken::errors::Error>;
+}
+pub(crate) struct AuthService {
+    pub user_repository: Arc<UserRepository>,
 }
 
-pub async fn encode_jwt(user: &User, secret: &[u8], expiration: usize) -> Result<String, jsonwebtoken::errors::Error> {
-    let claims = Claims {
-        sub: user.id,
-        exp: expiration,
-        roles: user.roles.clone(),
-    };
-    let header = Header::new(Algorithm::HS256);
-    let encoding_key = EncodingKey::from_secret(secret);
-    encode(&header, &claims, &encoding_key)
+impl AuthService {
+    pub(crate) async fn new() -> AuthService {
+        AuthService {user_repository: Arc::new(UserRepository::new(
+            crate::infrastructure::database::connection::establish_connection().await
+        ))}
+    }
 }
 
-pub async  fn decode_jwt(token: &str, secret: &[u8]) -> Result<Claims, jsonwebtoken::errors::Error> {
-    let decoding_key = DecodingKey::from_secret(secret);
-    let validation = Validation::new(Algorithm::HS256);
-    let token_data = decode::<Claims>(token, &decoding_key, &validation)?;
-    Ok(token_data.claims)
+#[async_trait]
+impl AuthServicePort for AuthService {
+    async fn authenticate_user(&self, login_request: LoginCommand) -> Result<LoginResponse, Status> {
+        match self.user_repository.find_user_by_email(&login_request.email).await {
+            Ok(user) => {
+                if self.validate_password(&login_request.password, &user.password).await {
+                    match self.encode_jwt(&user, 3600).await {
+                        Ok(token) => Ok(LoginResponse { jwt: token.to_string(),}),
+                        Err(_) => Err(Status::InternalServerError),
+                    }
+                } else {
+                    Err(Status::Unauthorized)
+                }
+            }
+            Err(_) => Err(Status::InternalServerError),
+        }
+    }
+
+    async fn validate_password(&self, password: &str, hash: &str) -> bool {
+        let password_hash = PasswordHash::new(hash).expect("Invalid hash");
+        let password_verifier = Argon2::default();
+
+        password_verifier
+            .verify_password(password.as_bytes(), &password_hash)
+            .is_ok()
+    }
+
+    async fn encode_jwt(&self, user: &User, expiration: usize) -> Result<String, jsonwebtoken::errors::Error> {
+        let secret = b"SECRET_KEY";
+
+        let claims = Claims {
+            sub: user.id.to_string(),
+            exp: expiration,
+            roles: user.roles.clone(),
+        };
+        let header = Header::new(Algorithm::HS256);
+        let encoding_key = EncodingKey::from_secret(secret);
+        encode(&header, &claims, &encoding_key)
+    }
+
+    async fn decode_jwt(&self, token: &str, secret: &[u8]) -> Result<Claims, jsonwebtoken::errors::Error> {
+        let decoding_key = DecodingKey::from_secret(secret);
+        let validation = Validation::new(Algorithm::HS256);
+        let token_data = decode::<Claims>(token, &decoding_key, &validation)?;
+        Ok(token_data.claims)
+    }
 }
