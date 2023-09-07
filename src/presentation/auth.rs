@@ -9,7 +9,8 @@ use crate::application::auth::login_cqrs::{LoginCommand, LoginResponse, SignUpCo
 
 #[utoipa::path(
     post,
-    path= "/login",
+    path= "/api/login",
+    request_body = "[]",
 )]
 #[post("/login", format = "application/json", data = "<login_request>")]
 pub async fn login(controller: &State<AuthController>, login_request: Json<LoginCommand>) -> Result<Json<LoginResponse>, Status> {
@@ -22,7 +23,7 @@ pub async fn login(controller: &State<AuthController>, login_request: Json<Login
 
 #[utoipa::path(
     post,
-    path = "/auth"
+    path = "/api/auth"
 )]
 #[post("/auth", format = "application/json", data = "<sign_up_request>")]
 pub async fn auth(controller: &State<AuthController>, sign_up_request: Json<SignUpCommand>) -> Result<Json<SignUpResponse>, Status> {

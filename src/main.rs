@@ -25,5 +25,5 @@ async fn rocket() -> _ {
     rocket::build()
         .mount("/", SwaggerUi::new("/swagger-ui/<_..>").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .manage(controller)
-        .mount("/auth", routes![presentation::auth::login, presentation::auth::auth])
+        .mount("/api", routes![presentation::auth::login, presentation::auth::auth])
 }
