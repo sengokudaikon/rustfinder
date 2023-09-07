@@ -8,7 +8,7 @@ pub struct LoginCommand {
     pub password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, ToResponse)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct LoginResponse {
     pub jwt: String,
 }
@@ -20,7 +20,7 @@ pub struct SignUpCommand {
     pub email: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, ToResponse)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct SignUpResponse {
     pub success: bool,
     pub message: String,

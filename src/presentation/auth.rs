@@ -7,7 +7,10 @@ use crate::usecases::user::auth_service::{AuthService, AuthServicePort};
 use crate::usecases::user::user_service::{UserService, UserServicePort};
 use crate::application::auth::login_cqrs::{LoginCommand, LoginResponse, SignUpCommand, SignUpResponse};
 
-
+#[utoipa::path(
+    post,
+    path= "/login",
+)]
 #[post("/login", format = "application/json", data = "<login_request>")]
 pub async fn login(controller: &State<AuthController>, login_request: Json<LoginCommand>) -> Result<Json<LoginResponse>, Status> {
     let login_result = controller.authenticate_user_login(login_request).await;
@@ -17,8 +20,12 @@ pub async fn login(controller: &State<AuthController>, login_request: Json<Login
     }
 }
 
-#[post("/signUp", format = "application/json", data = "<sign_up_request>")]
-pub async fn sign_up(controller: &State<AuthController>, sign_up_request: Json<SignUpCommand>) -> Result<Json<SignUpResponse>, Status> {
+#[utoipa::path(
+    post,
+    path = "/auth"
+)]
+#[post("/auth", format = "application/json", data = "<sign_up_request>")]
+pub async fn auth(controller: &State<AuthController>, sign_up_request: Json<SignUpCommand>) -> Result<Json<SignUpResponse>, Status> {
     let sign_up_result = controller.authenticate_user_sign_up(sign_up_request).await;
     match sign_up_result {
         Ok(response) => Ok(Json(response)),

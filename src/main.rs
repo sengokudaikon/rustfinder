@@ -7,8 +7,10 @@ mod persistence;
 mod port;
 mod presentation;
 
+use utoipa_swagger_ui::SwaggerUi;
 use crate::presentation::auth::AuthController;
-
+use crate::presentation::apidoc::ApiDoc;
+use utoipa::OpenApi;
 #[macro_use]
 extern crate rocket;
 
@@ -21,7 +23,7 @@ fn index() -> &'static str {
 async fn rocket() -> _ {
     let controller = AuthController::new().await;
     rocket::build()
-        .mount("/", routes![index])
+        .mount("/", SwaggerUi::new("/swagger-ui/<_..>").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .manage(controller)
-        .mount("/auth", routes![presentation::auth::login, presentation::auth::sign_up])
+        .mount("/auth", routes![presentation::auth::login, presentation::auth::auth])
 }
