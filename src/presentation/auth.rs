@@ -9,10 +9,11 @@ use crate::application::auth::login_cqrs::{LoginCommand, LoginResponse, SignUpCo
 
 #[utoipa::path(
     post,
-    path= "/api/login",
-    request_body = "[]",
+    tag="Auth",
+    path= "/api/auth/login",
+    request_body = LoginCommand
 )]
-#[post("/login", format = "application/json", data = "<login_request>")]
+#[post("/auth/login", format = "application/json", data = "<login_request>")]
 pub async fn login(controller: &State<AuthController>, login_request: Json<LoginCommand>) -> Result<Json<LoginResponse>, Status> {
     let login_result = controller.authenticate_user_login(login_request).await;
     match login_result {
@@ -23,10 +24,12 @@ pub async fn login(controller: &State<AuthController>, login_request: Json<Login
 
 #[utoipa::path(
     post,
-    path = "/api/auth"
+    tag="Auth",
+    path = "/api/auth/register",
+    request_body = SignUpCommand
 )]
-#[post("/auth", format = "application/json", data = "<sign_up_request>")]
-pub async fn auth(controller: &State<AuthController>, sign_up_request: Json<SignUpCommand>) -> Result<Json<SignUpResponse>, Status> {
+#[post("/auth/register", format = "application/json", data = "<sign_up_request>")]
+pub async fn register(controller: &State<AuthController>, sign_up_request: Json<SignUpCommand>) -> Result<Json<SignUpResponse>, Status> {
     let sign_up_result = controller.authenticate_user_sign_up(sign_up_request).await;
     match sign_up_result {
         Ok(response) => Ok(Json(response)),
