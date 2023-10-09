@@ -42,7 +42,7 @@ deadpool-postgres = "0.10.5"
 jsonwebtoken = "8.3.0"
 rocket-jwt = "0.5.1"
 utoipa = {version = "3.5.0", features = ["rocket_extras", "chrono", "uuid", "openapi_extensions", "rc_schema"] }
-utoipa-swagger-ui = { version = "3.1.5", features = ["rocket"]}
+utoipa-swagger-ui = { version = "4.0.0", features = ["rocket"]}
 utoipa_auto_discovery = "0.3.0"
 [target.'cfg(any(target_os = "macos", target_os = "windows"))'.dependencies]
 
